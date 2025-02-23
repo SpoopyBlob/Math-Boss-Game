@@ -14,44 +14,83 @@ import csv
 class Boss:
     boss_counter = 0
 
-    def __init__(self, attack, defence, name, level, health_bar = 100, heal_item = 3):
+    def __init__(self, attack, defence, name, level, health_bar, heal_item, heavy_attack, magic, magic_def, type_p, hint):
         self.name = name
         self.defence = defence
         self.attack = attack
         self.health_bar = health_bar
         self.level = level
         self.heal_item = heal_item
+        self.magic = magic
+        self.heavy_attack = heavy_attack
+        self.magic_def = magic_def
+        self.max_health = health_bar
+        self.type_p = type_p
+        self.hint = hint
+        
     
     def __repr__(self):
-        description = "{name} is a level {level} boss with an attack power of {attack} and a defensive power of {defence}".format(name = self.name, level = self.level, attack = self.attack, defence = self.defence)
+        type_p = ""
+        if self.type_p == "mag":
+            type_p = "wizzard"
+        elif self.type_p == "brute":
+            type_p = "brute"
+        elif self.type_p == "mix":
+            type_p = "swordsman with wizzarding capabilities"
+        description = "{name} is a level {level} boss and a {type}. {hint}".format(name = self.name, level = self.level, type = type_p, hint = self.hint)
         return description
     
-    def take_damage(self, damage):
-        points = damage - self.defence
+    def take_damage(self, damage, type_damage):
+        points = 0
+        if type_damage == "a":
+            points = damage - self.defence
+        elif type_damage == "m":
+            points = damage - self.magic_def
+        
         self.health_bar -= points
         if self.health_bar > 0:
             print("{name} has taken {points} points of damage, there health is now at {health} points".format(name = self.name, points = points, health = self.health_bar))
         else:
             print("{name} has been defeated!".format(name = self.name))
 
-
     def attack_player(self, target):
-        print("{name} attacks!".format(name = self.name))
-        target.take_damage(self.attack)
+        if self.type_p == "brute":
+            action = random.randint(1, 2)
+            if action == 1:
+                print("{name} performs heavy attack!".format(name = self.name))
+                target.take_damage(self.heavy_attack, "a")
+            elif action == 2:
+                print("{name} attacks!".format(name = self.name,))
+                target.take_damage(self.attack, "a")
+        elif self.type_p == "mag":
+            print("{name} casts a spell!".format(name = self.name))
+            target.take_damage(self.magic, "m")
+        elif self.type_p == "mix":
+            action = random.randint(1, 3)
+            if action == 1:
+                print("{name} performs heavy attack!".format(name = self.name))
+                target.take_damage(self.heavy_attack, "a")
+            elif action == 2:
+                print("{name} attacks!".format(name = self.name))
+                target.take_damage(self.attack, "a")
+            elif action == 3:
+                print("{name} casts a spell!".format(name = self.name))
+                target.take_damage(self.magic, "a")
+        
 
     def heal(self):
         if self.heal_item > 0:
             self.heal_item -= 1
             self.health_bar += 35
-            if self.health_bar > 100:
+            if self.health_bar > self.max_health:
                 self.health_bar = 100
 
             print("{name} has healed. They are now at {health_bar} health points".format(name = self.name, health_bar = self.health_bar))
 
 class Player:
-    player_xp_level_req = [100, 200, 400, 800, 1000]
+    player_xp_level_req = [50, 100, 150, 200, 250, 300, 350, 400, 450, 500, 1000]
 
-    def __init__(self, name, health_bar = 100, attack = 20, defence = 5, level = 1, xp = 0, heal_item = 0, boss_level = 1):
+    def __init__(self, name, health_bar = 100, attack = 20, defence = 5, level = 1, xp = 0, heal_item = 0, boss_level = 1, magic = 10, heavy_attack = 40, magic_def = 10):
         self.health_bar = health_bar
         self.attack = attack
         self.defence = defence
@@ -59,22 +98,43 @@ class Player:
         self.level = level
         self.xp = xp
         self.heal_item = heal_item
-        self.boss_level = 1
+        self.boss_level = boss_level
+        self.magic = magic
+        self.heavy_attack = heavy_attack
+        self.magic_def = magic_def
     
     def __repr__(self):
-        description = "{name}, you are currently level {level} with {attack} attack and {defence} defence.".format(name = self.name, level = self.level, attack = self.attack, defence = self.defence)
+        description = "{name}, here are your stats: level {level}, attack {attack}, heavy_attack {heavy}, defence {defence}, magic, {magic}, magic defence {magic_def} .".format(name = self.name, level = self.level, attack = self.attack, defence = self.defence, heavy = self.heavy_attack, magic_def = self.magic_def, magic = self.magic)
         return description
 
-    def attack_boss(self, target):
-        print("{name} attacks! 20xp gained".format(name  = self.name))
-        target.take_damage(self.attack)
-        self.gain_xp(5)
+    def if_boss_dead(self, target):
         if target.health_bar <= 0:
             print("100xp for defeating the boss, keep it up!")
             self.gain_xp(100)
+
+    def attack_boss(self, target, type):
+        if type == "a": #attack
+            print("{name} attacks! 5xp gained".format(name  = self.name))
+            target.take_damage(self.attack, "a")
+            self.gain_xp(5)
+            self.if_boss_dead(target)
+        if type == "m": #magic
+            print("{name} casts magic! 5xp gained".format(name  = self.name))
+            target.take_damage(self.magic, "m")
+            self.gain_xp(5)
+            self.if_boss_dead(target)
+        if type == "h": #heavy_attack
+            print("{name} performs heavy attack! 5xp gained".format(name  = self.name))
+            target.take_damage(self.heavy_attack, "a")
+            self.gain_xp(5)
+            self.if_boss_dead(target)
     
-    def take_damage(self, damage):
+    def take_damage(self, damage, type):
         points = damage - self.defence
+        if type == "a":
+            points = damage - self.defence
+        elif type == "m":
+            points = damage - self.magic_def
         self.health_bar -= points
         if self.health_bar > 0:       
             print("You have taken {points} points of damage, your health is now at {health} points".format(points = points, health = self.health_bar))
@@ -116,7 +176,7 @@ class Player:
 
     def save_to_csv(self):
         filename = "{name}'s_player_profile.csv".format(name = self.name)
-        fieldnames = ["name", "attack", "defence", "level", "xp", "heal_item", "boss_level"]
+        fieldnames = ["name", "attack", "defence", "level", "xp", "heal_item", "boss_level", "magic", "heavy_attack", "magic_def"]
         
         list_of_attributes = {
             "name": self.name,
@@ -125,7 +185,10 @@ class Player:
             "level": self.level,
             "xp": self.xp,
             "heal_item": self.heal_item,
-            "boss_level": self.boss_level
+            "boss_level": self.boss_level,
+            "magic": self.magic,
+            "heavy_attack": self.heavy_attack,
+            "magic_def": self.magic_def
         }
         
         with open(filename, 'w') as file:
@@ -148,6 +211,9 @@ class Player:
             self.xp = int(player_data["xp"])
             self.heal_item = int(player_data["heal_item"])
             self.boss_level = int(player_data["boss_level"])
+            self.magic = int(player_data["magic"])
+            self.heavy_attack = int(player_data["heavy_attack"])
+            self.magic_def = int(player_data["magic_def"])
     
     def add_valid_user(self):
         with open("user_check.csv", 'a') as file:
@@ -159,15 +225,27 @@ def create_player(name):
     return new_player
 
 def create_boss(level):
-    names = ["Zarathor the Unyielding", "Lady Thalindra, Warden of the Abyss", "Vorathar, the Dark Seer", "Kragoth the Devourer", "Veylanar, the Eternal Flame", "Aeloria, Queen of the Fallen", "Khorath the Soulbinder", "Malrathar, the Stormbringer"]
-    name = names[level - 1]
+    with open("Boss_profiles.csv", 'r') as boss_file:
+        reader_object = csv.DictReader(boss_file)
+        boss_dict = {}
+        for boss in reader_object:
+            if boss["level"] == str(level):
+                boss_dict = boss
+        
+        level = boss_dict["level"]
+        name = boss_dict["name"]
+        defence = boss_dict["defence"]
+        attack = boss_dict["attack"]
+        health_bar = boss_dict["health_bar"]
+        heal_item = boss_dict["heal_item"]
+        magic = boss_dict["magic"]
+        heavy_attack = boss_dict["heavy_attack"]
+        magic_def = boss_dict["magic_def"]
+        type_p = boss_dict["type_p"]
+        hint = boss_dict["hint"]
 
-    attack = 10 * level
-    defence = 5 * level
-
-    boss = Boss(attack, defence, name, level)
-    Boss.boss_counter += 1
-    return boss
+        boss_object = Boss(int(attack), int(defence), name, int(level), int(health_bar), int(heal_item), int(heavy_attack), int(magic), int(magic_def), type_p, hint)
+        return boss_object
 
 def question_generator(level):
     
@@ -362,7 +440,6 @@ def user_check(name):
             return "new_user"
 
 
-
 print("In this game you are tasked with defeating all 8 bosses. Bosses are defeated when you have depleated there health_bar. To depleate there health_bar you must answer math questions that will increase in difficulty!")
 name = input("Start by creating a name for your character or entering a name of an existing character: ")
 player = create_player(name)
@@ -375,11 +452,10 @@ elif valid_user == "new_user":
 
 print(player)
 
-
 running = True
 while running == True:
     
-    boss = create_boss(player.boss_level)
+    boss = create_boss(str(player.boss_level))
     print("Your current boss:")
     print(boss)
 
@@ -409,16 +485,19 @@ while running == True:
 
         if user_valid_input == True:
             print("Correct! Time for action...")
-            user_action = input("To attack type A to heal type E: ")
-            if user_action == "A":
-                player.attack_boss(boss)
-            elif user_action == "E":
+            user_action = input("Attack: A, Heavy Attack: H, Magic: M, Heal: E ")
+            if user_action == "A": #attack
+                player.attack_boss(boss, "a")
+            elif user_action.upper() == "E": #heal
                player.heal()
+            elif user_action.upper() == "H": #heavy_attack
+                player.attack_boss(boss, "h")
+            elif user_action.upper() == "M": #magic_attack
+                player.attack_boss(boss, "m")
         else:
             print("Incorrect!")
             if boss.health_bar <= 50 and boss.heal_item > 0:
                 action = random.randint(1, 2)
-                print(action)
                 if action == 1:
                     boss.attack_player(player)
                 elif action == 2:
