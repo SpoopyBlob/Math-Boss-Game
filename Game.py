@@ -83,15 +83,16 @@ class Boss:
             self.heal_item -= 1
             self.health_bar += 35
             if self.health_bar > self.max_health:
-                self.health_bar = 100
+                self.health_bar = self.max_health
 
             print("{name} has healed. They are now at {health_bar} health points".format(name = self.name, health_bar = self.health_bar))
 
 class Player:
     player_xp_level_req = [50, 100, 150, 200, 250, 300, 350, 400, 450, 500, 1000]
 
-    def __init__(self, name, health_bar = 100, attack = 20, defence = 5, level = 1, xp = 0, heal_item = 0, boss_level = 1, magic = 10, heavy_attack = 40, magic_def = 10):
+    def __init__(self, name, health_bar = 100, attack = 10, defence = 20, level = 1, xp = 0, heal_item = 1, boss_level = 1, magic = 10, heavy_attack = 20, magic_def = 5):
         self.health_bar = health_bar
+        self.max_health = health_bar
         self.attack = attack
         self.defence = defence
         self.name = name
@@ -104,7 +105,7 @@ class Player:
         self.magic_def = magic_def
     
     def __repr__(self):
-        description = "{name}, here are your stats: level {level}, attack {attack}, heavy_attack {heavy}, defence {defence}, magic, {magic}, magic defence {magic_def} .".format(name = self.name, level = self.level, attack = self.attack, defence = self.defence, heavy = self.heavy_attack, magic_def = self.magic_def, magic = self.magic)
+        description = "{name}, here are your stats: level {level}, attack {attack}, heavy_attack {heavy}, defence {defence}, magic, {magic}, magic defence {magic_def}, max health {health} .".format(name = self.name, level = self.level, attack = self.attack, defence = self.defence, heavy = self.heavy_attack, magic_def = self.magic_def, magic = self.magic, health = self.max_health)
         return description
 
     def if_boss_dead(self, target):
@@ -147,7 +148,7 @@ class Player:
             self.heal_item -= 1
             self.health_bar += 35
             if self.health_bar > 100:
-                self.health_bar = 100
+                self.health_bar = self.max_health
 
             if health_bar == self.health_bar:
                 print("You have wasted a healing potion!")
@@ -194,7 +195,7 @@ class Player:
             
             if error == False:
                 valid_input = True
-
+        self.max_health += 20
         print(player)
 
 
@@ -306,8 +307,8 @@ def question_generator(level):
             return string, answer
 
     elif level == 3:
-        num1 = random.randint(1, 20)
-        num2 = random.randint(1, 20)
+        num1 = random.randint(1, 40)
+        num2 = random.randint(1, 40)
         symbols = ["+", "-"]
         symbol = random.choice(symbols)
         
@@ -320,12 +321,11 @@ def question_generator(level):
             answer = num1 - num2
             string = "What is {num1} - {num2}?".format(num1 = num1, num2 = num2)
             return string, answer
-        
-    
+            
     elif level == 4:
-        num1 = random.randint(1, 30)
-        num2 = random.randint(1, 30)
-        symbols = ["+", "-", "/"]
+        num1 = random.randint(1, 80)
+        num2 = random.randint(1, 80)
+        symbols = ["+", "-"]
         symbol = random.choice(symbols)
         
         if symbol == "+":
@@ -336,16 +336,11 @@ def question_generator(level):
         if symbol == "-":
             answer = num1 - num2
             string = "What is {num1} - {num2}?".format(num1 = num1, num2 = num2)
-            return string, answer
-
-        if symbol == "/":
-            answer = num1 / num2
-            string = "What is {num1} / {num2}?".format(num1 = num1, num2 = num2)
-            return string, answer        
+            return string, answer     
 
     elif level == 5:
-        num1 = random.randint(1, 40)
-        num2 = random.randint(1, 40)
+        num1 = random.randint(1, 100)
+        num2 = random.randint(1, 100)
         symbols = ["+", "-", "/"]
         symbol = random.choice(symbols)
         
@@ -360,6 +355,11 @@ def question_generator(level):
             return string, answer
 
         if symbol == "/":
+            num1 = random.randint(2, 4)
+            num2 = random.randint(2, 20)
+            if num1 % 2 == 1: num1 +=1
+            if num2 % 2 == 1: num1 +=1
+
             answer = num1 / num2
             string = "What is {num1} / {num2}?".format(num1 = num1, num2 = num2)
             return string, answer        
@@ -382,9 +382,14 @@ def question_generator(level):
             return string, answer
 
         if symbol == "/":
+            num1 = random.randint(2, 4)
+            num2 = random.randint(2, 40)
+            if num1 % 2 == 1: num1 +=1
+            if num2 % 2 == 1: num1 +=1
+            
             answer = num1 / num2
             string = "What is {num1} / {num2}?".format(num1 = num1, num2 = num2)
-            return string, answer        
+            return string, answer          
 
         if symbol == "*":
             answer = num1 * num2
@@ -408,9 +413,14 @@ def question_generator(level):
             return string, answer
 
         if symbol == "/":
+            num1 = random.randint(2, 6)
+            num2 = random.randint(2, 40)
+            if num1 % 2 == 1: num1 +=1
+            if num2 % 2 == 1: num1 +=1
+            
             answer = num1 / num2
             string = "What is {num1} / {num2}?".format(num1 = num1, num2 = num2)
-            return string, answer        
+            return string, answer         
 
         if symbol == "*":
             answer = num1 * num2
@@ -434,9 +444,10 @@ def question_generator(level):
             return string, answer
 
         if symbol == "/":
-            answer = num1 / num2
-            string = "What is {num1} / {num2}?".format(num1 = num1, num2 = num2)
-            return string, answer        
+            num1 = random.randint(2, 10)
+            num2 = random.randint(2, 60)
+            if num1 % 2 == 1: num1 +=1
+            if num2 % 2 == 1: num1 +=1     
 
         if symbol == "*":
             answer = num1 * num2
@@ -457,29 +468,31 @@ def user_check(name):
         reader_object = csv.DictReader(file)
         contents = [row for row in reader_object]
 
+    valid_user = False
     for user in contents:
         if user["name"] == name.upper():
-            return "valid_user"
-        else:
-            return "new_user"
+            valid_user = True
+            break
+    
+    return valid_user
 
 
 print("In this game you are tasked with defeating all 8 bosses. Bosses are defeated when you have depleated there health_bar. To depleate there health_bar you must answer math questions that will increase in difficulty!")
 name = input("Start by creating a name for your character or entering a name of an existing character: ")
 player = create_player(name)
 valid_user = user_check(player.name)
-if valid_user == "valid_user":
+if valid_user == True:
     player.load_csv()
-elif valid_user == "new_user":
+elif valid_user == False:
     player.save_to_csv()
     player.add_valid_user()
 
 print(player)
-player.level_up()
 
 running = True
 while running == True:
     
+    player.health_bar = player.max_health
     boss = create_boss(str(player.boss_level))
     print("Your current boss:")
     print(boss)
@@ -547,7 +560,8 @@ while running == True:
             player.new_heal_item()
             if player.boss_level == 8:
                 print("You have completed the game! Welldone, You can continue to play at this level or create another character to restart")
-            player.boss_level += 1
+            else:
+                player.boss_level += 1
 
     if exit_status == "Exit":
         break
