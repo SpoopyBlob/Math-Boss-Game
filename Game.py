@@ -169,10 +169,34 @@ class Player:
     def level_up(self):
         self.xp = self.xp - self.player_xp_level_req[self.level - 1]
         self.level += 1
+        valid_input = False
         print("Congrats you are now level {level}!".format(level = self.level))
+        while valid_input == False:
+            print("Choose two stats you would like to upgrade e.g. 1/3 upgrades attack and magic or 1/1 to upgrade attack twice ")
+            user_upgrade = input("Attack: 1, Heavy Attack: 2, Magic: 3, Magic Defence: 4, Defence: 5")
+            split_strings = user_upgrade.split("/")
+            #Checks to see if input is valid, loop will continue if input is invalid
+            error = False
+            for num in split_strings:
+                if num == "1":
+                    self.attack += 10
+                elif num == "2":
+                    self.heavy_attack += 10
+                elif num == "3":
+                    self.magic += 10
+                elif num == "4":
+                    self.magic_def += 10
+                elif num == "5":
+                    self.defence += 10
+                else:
+                    error = True
+                    print("Invalid input :(")
+            
+            if error == False:
+                valid_input = True
 
-        self.attack = 20 * self.level
-        self.defence = 5 * self.level
+        print(player)
+
 
     def save_to_csv(self):
         filename = "{name}'s_player_profile.csv".format(name = self.name)
@@ -284,7 +308,7 @@ def question_generator(level):
     elif level == 3:
         num1 = random.randint(1, 20)
         num2 = random.randint(1, 20)
-        symbols = ["+", "-", "/"]
+        symbols = ["+", "-"]
         symbol = random.choice(symbols)
         
         if symbol == "+":
@@ -296,7 +320,7 @@ def question_generator(level):
             answer = num1 - num2
             string = "What is {num1} - {num2}?".format(num1 = num1, num2 = num2)
             return string, answer
-
+        
     
     elif level == 4:
         num1 = random.randint(1, 30)
@@ -451,6 +475,7 @@ elif valid_user == "new_user":
     player.add_valid_user()
 
 print(player)
+player.level_up()
 
 running = True
 while running == True:
@@ -484,16 +509,24 @@ while running == True:
         user_valid_input = answer_question(question, answer)
 
         if user_valid_input == True:
+            valid_input = False
             print("Correct! Time for action...")
-            user_action = input("Attack: A, Heavy Attack: H, Magic: M, Heal: E ")
-            if user_action == "A": #attack
-                player.attack_boss(boss, "a")
-            elif user_action.upper() == "E": #heal
-               player.heal()
-            elif user_action.upper() == "H": #heavy_attack
-                player.attack_boss(boss, "h")
-            elif user_action.upper() == "M": #magic_attack
-                player.attack_boss(boss, "m")
+            while valid_input == False:
+                user_action = input("Attack: A, Heavy Attack: H, Magic: M, Heal: E ")
+                if user_action == "A": #attack
+                    player.attack_boss(boss, "a")
+                    valid_input = True
+                elif user_action.upper() == "E": #heal
+                    player.heal()
+                    valid_input = True
+                elif user_action.upper() == "H": #heavy_attack
+                    player.attack_boss(boss, "h")
+                    valid_input = True
+                elif user_action.upper() == "M": #magic_attack
+                    player.attack_boss(boss, "m")
+                    valid_input = True
+                else:
+                    print("Invalid input :(")
         else:
             print("Incorrect!")
             if boss.health_bar <= 50 and boss.heal_item > 0:
@@ -512,7 +545,7 @@ while running == True:
 
         if boss.health_bar <= 0:
             player.new_heal_item()
-            if boss_level == 8:
+            if player.boss_level == 8:
                 print("You have completed the game! Welldone, You can continue to play at this level or create another character to restart")
             player.boss_level += 1
 
