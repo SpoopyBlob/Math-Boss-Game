@@ -1,20 +1,10 @@
 import random
 import csv
-#add new actions heavy_attack, magic, maybe the user gets to choose from a range of starter classes, mage, brute, swordsman?
-#bosses also have speacial abilities, with weekness and strengths
-#add level up tree that allows you to choose two attributes to level up, including health_bar?
-#bosses have dialouge? Maybe some strings to personalise the bosses
-#implament item drops, health_item, attribute_boost (temp), skip_question(temp) these could be boss drops
-#refine strings and presentation of game in console + alter xp given by each boss
-
-#Unlimited mode: Like an arcade game, once you have reached level 8 you can go against an onslaught of bosses back to back. This could be considered hardcore mode, highscore gets saved.
-#This is my final list of things to do, once I have done this and it all works, im going to finish this project.
-
 
 class Boss:
     boss_counter = 0
 
-    def __init__(self, attack, defence, name, level, health_bar, heal_item, heavy_attack, magic, magic_def, type_p, hint):
+    def __init__(self, attack, defence, name, level, health_bar, heal_item, heavy_attack, magic, magic_def, type_p, hint, xp):
         self.name = name
         self.defence = defence
         self.attack = attack
@@ -27,8 +17,12 @@ class Boss:
         self.max_health = health_bar
         self.type_p = type_p
         self.hint = hint
+        if self.type_p == "brute":
+            self.heavy_attack_charge = 5
+        else:
+            self.heavy_attack_charge = 3
+        self.xp_on_death = xp
         
-    
     def __repr__(self):
         type_p = ""
         if self.type_p == "mag":
@@ -47,9 +41,12 @@ class Boss:
         elif type_damage == "m":
             points = damage - self.magic_def
         
+        if points < 0:
+            points = 0
+        
         self.health_bar -= points
         if self.health_bar > 0:
-            print("{name} has taken {points} points of damage, there health is now at {health} points".format(name = self.name, points = points, health = self.health_bar))
+            print("{name} has taken {points} points of damage, their health is now at {health} points".format(name = self.name, points = points, health = self.health_bar))
         else:
             print("{name} has been defeated!".format(name = self.name))
 
@@ -68,7 +65,12 @@ class Boss:
         elif self.type_p == "mix":
             action = random.randint(1, 3)
             if action == 1:
-                print("{name} performs heavy attack!".format(name = self.name))
+                if self.heavy_attack_charge == 0:
+                    target.take_damage(self.heavy_attack / 4, 'a')
+                    print("{name} attempts heavy attack but fails!".format(name = self.name))
+                else:
+                    print("{name} performs heavy attack!".format(name = self.name))
+                    self.heavy_attack_charge -= 1
                 target.take_damage(self.heavy_attack, "a")
             elif action == 2:
                 print("{name} attacks!".format(name = self.name))
@@ -77,7 +79,6 @@ class Boss:
                 print("{name} casts a spell!".format(name = self.name))
                 target.take_damage(self.magic, "a")
         
-
     def heal(self):
         if self.heal_item > 0:
             self.heal_item -= 1
@@ -102,6 +103,7 @@ class Player:
         self.boss_level = boss_level
         self.magic = magic
         self.heavy_attack = heavy_attack
+        self.heavy_attack_charge = 3
         self.magic_def = magic_def
     
     def __repr__(self):
@@ -110,8 +112,8 @@ class Player:
 
     def if_boss_dead(self, target):
         if target.health_bar <= 0:
-            print("100xp for defeating the boss, keep it up!")
-            self.gain_xp(100)
+            print("{xp}xp for defeating the boss, keep it up!".format(xp = boss.xp_on_death))
+            self.gain_xp(boss.xp_on_death)
 
     def attack_boss(self, target, type):
         if type == "a": #attack
@@ -125,10 +127,16 @@ class Player:
             self.gain_xp(5)
             self.if_boss_dead(target)
         if type == "h": #heavy_attack
-            print("{name} performs heavy attack! 5xp gained".format(name  = self.name))
-            target.take_damage(self.heavy_attack, "a")
-            self.gain_xp(5)
-            self.if_boss_dead(target)
+            if self.heavy_attack_charge == 0:
+                print("{name} attempts heavy attack but fails!".format(name  = self.name))
+                print("Hint: You only have energy for 3 heavy attacks per fight")
+                target.take_damage(self.heavy_attack / 4, "a")
+            else: 
+                print("{name} performs heavy attack! 5xp gained".format(name  = self.name))
+                target.take_damage(self.heavy_attack, "a")
+                self.heavy_attack_charge -= 1
+                self.gain_xp(5)
+                self.if_boss_dead(target)
     
     def take_damage(self, damage, type):
         points = damage - self.defence
@@ -136,6 +144,10 @@ class Player:
             points = damage - self.defence
         elif type == "m":
             points = damage - self.magic_def
+
+        if points < 0:
+            points = 0
+
         self.health_bar -= points
         if self.health_bar > 0:       
             print("You have taken {points} points of damage, your health is now at {health} points".format(points = points, health = self.health_bar))
@@ -174,7 +186,7 @@ class Player:
         print("Congrats you are now level {level}!".format(level = self.level))
         while valid_input == False:
             print("Choose two stats you would like to upgrade e.g. 1/3 upgrades attack and magic or 1/1 to upgrade attack twice ")
-            user_upgrade = input("Attack: 1, Heavy Attack: 2, Magic: 3, Magic Defence: 4, Defence: 5")
+            user_upgrade = input("Attack: 1, Heavy Attack: 2, Magic: 3, Magic Defence: 4, Defence: 5: ")
             split_strings = user_upgrade.split("/")
             #Checks to see if input is valid, loop will continue if input is invalid
             error = False
@@ -195,9 +207,9 @@ class Player:
             
             if error == False:
                 valid_input = True
+        
         self.max_health += 20
         print(player)
-
 
     def save_to_csv(self):
         filename = "{name}'s_player_profile.csv".format(name = self.name)
@@ -268,8 +280,9 @@ def create_boss(level):
         magic_def = boss_dict["magic_def"]
         type_p = boss_dict["type_p"]
         hint = boss_dict["hint"]
+        xp = boss_dict["xp_on_death"]
 
-        boss_object = Boss(int(attack), int(defence), name, int(level), int(health_bar), int(heal_item), int(heavy_attack), int(magic), int(magic_def), type_p, hint)
+        boss_object = Boss(int(attack), int(defence), name, int(level), int(health_bar), int(heal_item), int(heavy_attack), int(magic), int(magic_def), type_p, hint, int(xp))
         return boss_object
 
 def question_generator(level):
@@ -363,7 +376,6 @@ def question_generator(level):
             answer = num1 / num2
             string = "What is {num1} / {num2}?".format(num1 = num1, num2 = num2)
             return string, answer        
-
 
     elif level == 6:
         num1 = random.randint(1, 40)
@@ -476,8 +488,7 @@ def user_check(name):
     
     return valid_user
 
-
-print("In this game you are tasked with defeating all 8 bosses. Bosses are defeated when you have depleated there health_bar. To depleate there health_bar you must answer math questions that will increase in difficulty!")
+print("In this game you are tasked with defeating all 8 bosses. Bosses are defeated when you have depleated their health_bar. To depleate their health_bar you must answer math questions that will increase in difficulty!")
 name = input("Start by creating a name for your character or entering a name of an existing character: ")
 player = create_player(name)
 valid_user = user_check(player.name)
@@ -493,6 +504,7 @@ running = True
 while running == True:
     
     player.health_bar = player.max_health
+    player.heavy_attack_charge = 3
     boss = create_boss(str(player.boss_level))
     print("Your current boss:")
     print(boss)
@@ -516,7 +528,6 @@ while running == True:
     if exit_status == "Exit":
         break
 
-
     while boss.health_bar > 0:
         question, answer = question_generator(boss.level)
         user_valid_input = answer_question(question, answer)
@@ -525,7 +536,7 @@ while running == True:
             valid_input = False
             print("Correct! Time for action...")
             while valid_input == False:
-                user_action = input("Attack: A, Heavy Attack: H, Magic: M, Heal: E ")
+                user_action = input("Attack: A, Heavy Attack: H, Magic: M, Heal: E (You have {heal} potions): ".format(heal = player.heal_item))
                 if user_action == "A": #attack
                     player.attack_boss(boss, "a")
                     valid_input = True
@@ -548,11 +559,13 @@ while running == True:
                     boss.attack_player(player)
                 elif action == 2:
                     boss.heal()
+            elif boss.health_bar < 25:
+                boss.heal()
             else:
                 boss.attack_player(player)
 
         if player.health_bar <= 0:
-            print("Not this time :(... you got to the level {level_boss} boss.".format(level_boss = boss.level))
+            print("Not this time :(... you got to the level {level_boss}.".format(level_boss = boss.level))
             exit_status = "Exit"
             break
 
@@ -566,15 +579,3 @@ while running == True:
     if exit_status == "Exit":
         break
         
-        
-
-
-
-
-
-
-
-
-
-
-

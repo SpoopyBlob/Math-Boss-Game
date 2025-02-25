@@ -1,9 +1,9 @@
-level,name,defence,attack,health_bar,heal_item,magic,heavy_attack,magic_def,type_p,hint
-1,Zarathor the Unyielding,5,10,100,3,0,20,0,brute,"Hint: Low magic defence"
-2,Lady Thalindra Warden of the Abyss, 5,15,100,3,20,0,40,mag,"Hint: Low physical defence"
-3,Vorathar the Dark Seer,20,20,150,5,10,40,5,mix,"Hint: Low magic defence"
-4,Kragoth the Devourer,5,20,150,5,15,50,30,mix,"Hint: Low physical defence"
-5,Veylanar the Eternal Flame,20,5,200,3,40,10,50,mag,"Hint: Magic defence is high"
-6,Aeloria Queen of the Fallen,40,30,200,5,5,60,0,brute,"Hint: No magic defence" 
-7,Khorath the Soulbinder,20,20,250,2,60,40,30,mag,"Hint: pyhsical defence is lower than magic"
-8,Malrathar the Stormbringer,50,50,300,5,25,75,50,brute,"Hint: GOOD LUCK!!!"
+level,name,defence,attack,health_bar,heal_item,magic,heavy_attack,magic_def,type_p,hint,xp_on_death
+1,Zarathor the Unyielding,5,10,100,3,0,20,0,brute,"Hint: Low magic defence",100
+2,Lady Thalindra Warden of the Abyss, 5,15,100,3,20,0,40,mag,"Hint: Low physical defence",100
+3,Vorathar the Dark Seer,20,20,150,5,10,40,5,mix,"Hint: Low magic defence",150
+4,Kragoth the Devourer,5,20,150,5,15,50,30,mix,"Hint: Low physical defence",150
+5,Veylanar the Eternal Flame,20,5,200,3,40,10,50,mag,"Hint: Magic defence is high",200
+6,Aeloria Queen of the Fallen,40,30,200,5,5,60,0,brute,"Hint: No magic defence",250
+7,Khorath the Soulbinder,20,20,250,2,60,40,30,mag,"Hint: pyhsical defence is lower than magic",300
+8,Malrathar the Stormbringer,50,50,300,5,25,75,50,brute,"Hint: GOOD LUCK!!!",350
