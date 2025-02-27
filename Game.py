@@ -36,7 +36,6 @@ class entity:
             if self.health_bar > self.max_health:
                 self.health_bar = self.max_health    
     
-
 class Boss(entity):
     boss_counter = 0
 
@@ -53,16 +52,16 @@ class Boss(entity):
     def type_p_string(self):
         type_p = ""
         if self.type_p == "mag":
-            type_p = "wizzard"
+            type_p = "a powerful wizzard"
         elif self.type_p == "brute":
-            type_p = "brute"
+            type_p = "a strong brute"
         elif self.type_p == "mix":
-            type_p = "swordsman with wizarding capabilities"
+            type_p = "a swordsman with wizarding capabilities"
         return type_p
 
     def __repr__(self):
         type_p = Boss.type_p_string(self)
-        description = "{name} is a level {level} boss and a {type}. {hint}".format(name = self.name, level = self.level, type = type_p, hint = self.hint)
+        description = "{name} is a level {level} boss and {type}. {hint}".format(name = self.name, level = self.level, type = type_p, hint = self.hint)
         return description
     
     def boss_take_damage(self, damage, type_damage):
@@ -150,7 +149,6 @@ class Player(entity):
                 print("{name} performs heavy attack! 5xp gained".format(name  = self.name))
                 target.boss_take_damage(self.heavy_attack, "a")
                 self.heavy_attack_charge -= 1
-                
 
         self.gain_xp(5)
         self.if_boss_dead(target)
@@ -173,17 +171,17 @@ class Player(entity):
                 super().heal()
                 print("You are now at {health_bar} health points".format(health_bar = self.health_bar))
         
-
     def new_heal_item(self):
         self.heal_item += 1
         print("You have earned a health potion, you now have {heal_item}.".format(heal_item = self.heal_item))
-        
+  
     def gain_xp(self, xp):
         self.xp += xp
         if self.xp > self.player_xp_level_req[self.level - 1]:
             self.level_up()
         print("XP: {xp}/{req}".format(xp = self.xp, req = self.player_xp_level_req[self.level - 1]))
 
+    #levels up user and upgrades stats
     def level_up(self):
         self.xp = self.xp - self.player_xp_level_req[self.level - 1]
         self.level += 1
@@ -195,8 +193,7 @@ class Player(entity):
             user_upgrade = input("Attack: 1, Heavy Attack: 2, Magic: 3, Magic Defence: 4, Defence: 5: ")
             split_strings = user_upgrade.split("/")
             
-            #Checks to see if input is valid, loop will continue if input is invalid
-            error = False
+            invalid_input = False
             for num in split_strings:
                 if num == "1":
                     self.attack += 6
@@ -209,15 +206,16 @@ class Player(entity):
                 elif num == "5":
                     self.defence += 6
                 else:
-                    error = True
+                    invalid_input = True
                     print("Invalid input :(")
             
-            if error == False:
+            if invalid_input == False:
                 valid_input = True
         
         self.max_health += 20
         print(player)
 
+    #saves players stats
     def save_to_csv(self):
         filename = "{name}'s_player_profile.csv".format(name = self.name)
         fieldnames = ["name", "attack", "defence", "level", "xp", "heal_item", "boss_level", "magic", "heavy_attack", "magic_def"]
@@ -240,6 +238,7 @@ class Player(entity):
             writer_object.writeheader()
             writer_object.writerow(list_of_attributes)
 
+    #loads an existing player's profile
     def load_csv(self):
         filename = "{name}'s_player_profile.csv".format(name = self.name)
         with open(filename, 'r') as file:
@@ -259,15 +258,18 @@ class Player(entity):
             self.heavy_attack = int(player_data["heavy_attack"])
             self.magic_def = int(player_data["magic_def"])
     
+    #Adds a new player to the valid user csv
     def add_valid_user(self):
         with open("user_check.csv", 'a') as file:
             file_writer = csv.writer(file)
             file_writer.writerow([self.name.upper()])
 
+#Creates player with default starting attributes
 def create_player(name):
     new_player = Player(name, 100, 10, 20, 1, 0, 1, 1, 10, 20, 5)
     return new_player
 
+#Creates boss from CSV
 def create_boss(level):
     with open("Boss_profiles.csv", 'r') as boss_file:
         reader_object = csv.DictReader(boss_file)
@@ -294,185 +296,46 @@ def create_boss(level):
 
 #Random question generator
 def question_generator(level):
+    num1 = random.randint(1, 10 * level)
+    num2 = random.randint(1, 10 * level)
     
-    if level == 1:
-        num1 = random.randint(1, 10)
-        num2 = random.randint(1, 10)
-        symbols = ["+", "-"]
-        symbol = random.choice(symbols)
-        
-        if symbol == "+":
-            answer = num1 + num2
-            string = "What is {num1} + {num2}?".format(num1 = num1, num2 = num2)
-            return string, answer
-        
-        if symbol == "-":
-            answer = num1 - num2
-            string = "What is {num1} - {num2}?".format(num1 = num1, num2 = num2)
-            return string, answer
-
-    elif level == 2:
-        num1 = random.randint(1, 20)
-        num2 = random.randint(1, 20)
-        symbols = ["+", "-"]
-        symbol = random.choice(symbols)
-        
-        if symbol == "+":
-            answer = num1 + num2
-            string = "What is {num1} + {num2}?".format(num1 = num1, num2 = num2)
-            return string, answer
-        
-        if symbol == "-":
-            answer = num1 - num2
-            string = "What is {num1} - {num2}?".format(num1 = num1, num2 = num2)
-            return string, answer
-
-    elif level == 3:
-        num1 = random.randint(1, 40)
-        num2 = random.randint(1, 40)
-        symbols = ["+", "-"]
-        symbol = random.choice(symbols)
-        
-        if symbol == "+":
-            answer = num1 + num2
-            string = "What is {num1} + {num2}?".format(num1 = num1, num2 = num2)
-            return string, answer
-        
-        if symbol == "-":
-            answer = num1 - num2
-            string = "What is {num1} - {num2}?".format(num1 = num1, num2 = num2)
-            return string, answer
-            
-    elif level == 4:
-        num1 = random.randint(1, 80)
-        num2 = random.randint(1, 80)
-        symbols = ["+", "-"]
-        symbol = random.choice(symbols)
-        
-        if symbol == "+":
-            answer = num1 + num2
-            string = "What is {num1} + {num2}?".format(num1 = num1, num2 = num2)
-            return string, answer
-        
-        if symbol == "-":
-            answer = num1 - num2
-            string = "What is {num1} - {num2}?".format(num1 = num1, num2 = num2)
-            return string, answer     
-
-    elif level == 5:
-        num1 = random.randint(1, 100)
-        num2 = random.randint(1, 100)
+    symbols = ["+", "-"]
+    if level > 3:
         symbols = ["+", "-", "/"]
-        symbol = random.choice(symbols)
-        
-        if symbol == "+":
-            answer = num1 + num2
-            string = "What is {num1} + {num2}?".format(num1 = num1, num2 = num2)
-            return string, answer
-        
-        if symbol == "-":
-            answer = num1 - num2
-            string = "What is {num1} - {num2}?".format(num1 = num1, num2 = num2)
-            return string, answer
-
-        if symbol == "/":
-            num1 = random.randint(2, 4)
-            num2 = random.randint(2, 20)
-            if num1 % 2 == 1: num1 +=1
-            if num2 % 2 == 1: num1 +=1
-
-            answer = num1 / num2
-            string = "What is {num1} / {num2}?".format(num1 = num1, num2 = num2)
-            return string, answer        
-
-    elif level == 6:
-        num1 = random.randint(1, 40)
-        num2 = random.randint(1, 40)
+    elif level > 5:
         symbols = ["+", "-", "/", "*"]
-        symbol = random.choice(symbols)
+    
+    symbol = random.choice(symbols)
+
+    if symbol == "+":
+        answer = num1 + num2
+        string = "What is {num1} + {num2}?".format(num1 = num1, num2 = num2)
+        return string, answer
         
-        if symbol == "+":
-            answer = num1 + num2
-            string = "What is {num1} + {num2}?".format(num1 = num1, num2 = num2)
-            return string, answer
+    if symbol == "-":
+        answer = num1 - num2
+        string = "What is {num1} - {num2}?".format(num1 = num1, num2 = num2)
+        return string, answer
+
+    if symbol == "*":
+        num1 = random.randint(1, 12)
         
-        if symbol == "-":
-            answer = num1 - num2
-            string = "What is {num1} - {num2}?".format(num1 = num1, num2 = num2)
-            return string, answer
+        answer = num1 * num2
+        string = "What is {num1} * {num2}?".format(num1 = num1, num2 = num2)
+        return string, answer 
 
-        if symbol == "/":
-            num1 = random.randint(2, 4)
-            num2 = random.randint(2, 40)
-            if num1 % 2 == 1: num1 +=1
-            if num2 % 2 == 1: num1 +=1
-            
-            answer = num1 / num2
-            string = "What is {num1} / {num2}?".format(num1 = num1, num2 = num2)
-            return string, answer          
-
-        if symbol == "*":
-            answer = num1 * num2
-            string = "What is {num1} * {num2}?".format(num1 = num1, num2 = num2)
-            return string, answer      
-
-    elif level == 7:
-        num1 = random.randint(1, 50)
-        num2 = random.randint(1, 50)
-        symbols = ["+", "-", "/", "*"]
-        symbol = random.choice(symbols)
+    if symbol == "/":
+        #Divide generates its own numbers else questions are unreasonably difficult
+        num1 = random.randint(2, 10 * level)
+        num2 = random.randint(2, 4)
         
-        if symbol == "+":
-            answer = num1 + num2
-            string = "What is {num1} + {num2}?".format(num1 = num1, num2 = num2)
-            return string, answer
+        answer = num1 / num2
+        string = "What is {num1} / {num2}?".format(num1 = num1, num2 = num2)
         
-        if symbol == "-":
-            answer = num1 - num2
-            string = "What is {num1} - {num2}?".format(num1 = num1, num2 = num2)
-            return string, answer
-
-        if symbol == "/":
-            num1 = random.randint(2, 6)
-            num2 = random.randint(2, 40)
-            if num1 % 2 == 1: num1 +=1
-            if num2 % 2 == 1: num1 +=1
-            
-            answer = num1 / num2
-            string = "What is {num1} / {num2}?".format(num1 = num1, num2 = num2)
-            return string, answer         
-
-        if symbol == "*":
-            answer = num1 * num2
-            string = "What is {num1} * {num2}?".format(num1 = num1, num2 = num2)
-            return string, answer     
-
-    elif level == 8:
-        num1 = random.randint(1, 100)
-        num2 = random.randint(1, 100)
-        symbols = ["+", "-", "/", "*"]
-        symbol = random.choice(symbols)
+        if answer.is_integer():
+            answer = int(answer)
         
-        if symbol == "+":
-            answer = num1 + num2
-            string = "What is {num1} + {num2}?".format(num1 = num1, num2 = num2)
-            return string, answer
-        
-        if symbol == "-":
-            answer = num1 - num2
-            string = "What is {num1} - {num2}?".format(num1 = num1, num2 = num2)
-            return string, answer
-
-        if symbol == "/":
-            num1 = random.randint(2, 10)
-            num2 = random.randint(2, 60)
-            if num1 % 2 == 1: num1 +=1
-            if num2 % 2 == 1: num1 +=1     
-
-        if symbol == "*":
-            answer = num1 * num2
-            string = "What is {num1} * {num2}?".format(num1 = num1, num2 = num2)
-            return string, answer   
+        return string, answer          
 
 #Asks question, returns True if correct, False if not
 def ask_question(question, answer):
@@ -576,7 +439,7 @@ while running == True:
         
         #Incorrect answer: Boss' turn
         else:
-            print("Incorrect!")
+            print("Incorrect! Answer is {answer}".format(answer = answer))
             if boss.health_bar <= 50 and boss.heal_item > 0:
                 action = random.randint(1, 2)
                 if action == 1:
